@@ -37,9 +37,9 @@ Blog examples live in a folder named after the post slug.
 
 ## 목록 / Index
 
-| 폴더 / Folder | 설명 / Description | 블로그 / Post |
+| 폴더 / Folder | 설명 / Description | 블로그 글 / Post |
 |---|---|---|
-| [`english-translator`](english-translator) | 한국어 ↔ 영어 콘솔 번역기 (Python · Java) / Korean ↔ English console translator | [english-translator](https://flameai.im/blog/english-translator) (준비 중 / coming soon) |
+| [`english-translator`](english-translator) | 한국어 ↔ 영어 콘솔 번역기 (Python · Java) / Korean ↔ English console translator | [Python 파일 하나로 만드는 한↔영 번역기](https://flameai.im/blog/english-translator) |
 
 ## License
 
