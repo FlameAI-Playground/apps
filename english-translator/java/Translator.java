@@ -21,15 +21,14 @@ import java.util.stream.Collectors;
  *   java Translator.java < note.txt               translate a whole file
  *   java Translator.java                          interactive mode (empty line to quit)
  *
- * Put your own values in the three constants below.
+ * Put your own values in the two constants below.
  * Do not share or commit this file with your real Secret Key in it.
  */
 public class Translator {
 
     // ── Settings — copy from the FlameAI console ─────────────────────────────
-    static final String API_BASE   = "https://api-xxxx.flameai.im/AbCd1234"; // Settings › My API › API base url
-    static final String SECRET_KEY = "YOUR_SECRET_KEY";                      // Settings › My API › Secret key
-    static final String CORTEX_ID  = "YOUR_CORTEX_ID";                       // Cortex list ⋮ › Copy Cortex ID
+    static final String API_URL    = "https://api-xxxx.flameai.im/AbCd1234/cortex/YOUR_CORTEX_ID/messages"; // Cortex list › API URL
+    static final String SECRET_KEY = "YOUR_SECRET_KEY";                                                     // Settings › My API › Secret key
     static final String CONVERSATION_ID = "english-translator";
 
     static final Map<String, String> LANGS = Map.of(
@@ -38,7 +37,7 @@ public class Translator {
 
     static final Map<String, String> ERRORS = Map.of(
             "bearer_not_found", "Secret Key 가 비어 있습니다. SECRET_KEY 를 확인하세요.",
-            "bearer_invalid", "API 주소, Secret Key 또는 Cortex ID 가 틀렸습니다. 콘솔에서 다시 복사하세요.",
+            "bearer_invalid", "API URL 또는 Secret Key 가 틀렸습니다. Cortex 목록·설정 화면에서 다시 복사하세요.",
             "cortexbox_offline", "FlameBox 가 꺼져 있습니다. PC/서버에서 FlameBox 를 켜 주세요.",
             "cortex_not_found", "Cortex ID 가 틀렸거나 삭제된 Cortex 입니다.",
             "cortex_occupied", "다른 대화가 이 Cortex 를 쓰고 있습니다. 잠시 뒤 다시 시도하세요.");
@@ -46,8 +45,8 @@ public class Translator {
     static final HttpClient HTTP = HttpClient.newBuilder().connectTimeout(Duration.ofSeconds(10)).build();
 
     public static void main(String[] args) throws Exception {
-        if ((SECRET_KEY + CORTEX_ID).contains("YOUR_") || API_BASE.contains("api-xxxx")) {
-            System.err.println("파일 위쪽의 API_BASE, SECRET_KEY, CORTEX_ID 를 내 값으로 바꾸세요 / set the constants at the top");
+        if ((API_URL + SECRET_KEY).contains("YOUR_") || API_URL.contains("api-xxxx")) {
+            System.err.println("파일 위쪽의 API_URL, SECRET_KEY 를 내 값으로 바꾸세요 / set the constants at the top");
             System.exit(1);
         }
         String to = null;
@@ -100,7 +99,9 @@ public class Translator {
                {"role": "user", "content": %s}]}
             """.formatted(quote(CONVERSATION_ID), quote(rule), quote(text));
 
-        HttpRequest request = HttpRequest.newBuilder(URI.create(API_BASE.replaceAll("/+$", "") + "/cortex/" + CORTEX_ID + "/messages"))
+        // accept the URL as copied from the Cortex list, with or without a leading "POST "
+        String url = API_URL.trim().replaceFirst("^POST\\s+", "");
+        HttpRequest request = HttpRequest.newBuilder(URI.create(url))
                 .header("Authorization", "Bearer " + SECRET_KEY)
                 .header("Content-Type", "application/json")
                 .header("X-API-Version", "1")

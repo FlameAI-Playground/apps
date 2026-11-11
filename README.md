@@ -27,13 +27,12 @@ Blog examples live in a folder named after the post slug.
 
 1. FlameBox 설치 후 계정 연결 — https://flameai.im/blog/flamebox-install-windows · https://flameai.im/blog/flamebox-install-linux
 2. 콘솔에서 Cortex 만들기 — https://flameai.im/blog/first-api-call
-3. 소스 위쪽의 상수 3개를 내 값으로 바꿉니다 / set the three constants at the top of the source
+3. 소스 위쪽의 상수 2개를 내 값으로 바꿉니다 / set the two constants at the top of the source
 
 | 상수 / Constant | 어디서 / Where |
 |---|---|
-| `API_BASE` | 설정 › My API › API base url (예: `https://api-xxxx.flameai.im/AbCd1234`) |
-| `SECRET_KEY` | 설정 › My API › Secret key |
-| `CORTEX_ID` | Cortex 목록 ⋮ › Cortex ID 복사 / Cortex list ⋮ › Copy Cortex ID |
+| `API_URL` | Cortex 목록에서 쓸 Cortex 의 API URL 복사 / Cortex list › API URL (`https://api-….flameai.im/{경로}/cortex/{Cortex ID}/messages`) |
+| `SECRET_KEY` | 설정 › My API › Secret key / Settings › My API › Secret key |
 
 > 실제 Secret Key 를 넣은 파일은 공유하거나 저장소에 올리지 마세요. / Never share or commit a file with your real Secret Key.
 

@@ -36,13 +36,15 @@ git clone https://github.com/FlameAI-Playground/apps
 cd apps/english-translator/java
 ```
 
-`Translator.java` 위쪽의 상수 3개를 내 값으로 바꿉니다.
+`Translator.java` 위쪽의 상수 2개를 내 값으로 바꿉니다.
 
 ```java
-static final String API_BASE   = "https://api-xxxx.flameai.im/AbCd1234"; // 설정 › My API › API base url
-static final String SECRET_KEY = "YOUR_SECRET_KEY";                      // 설정 › My API › Secret key
-static final String CORTEX_ID  = "YOUR_CORTEX_ID";                       // Cortex 목록 ⋮ › Cortex ID 복사
+static final String API_URL    = "https://api-xxxx.flameai.im/AbCd1234/cortex/YOUR_CORTEX_ID/messages"; // Cortex 목록의 API URL
+static final String SECRET_KEY = "YOUR_SECRET_KEY";                                                     // 설정 › My API › Secret key
 ```
+
+- **API URL** — 마이페이지 › **Cortex** 목록에서 번역에 쓸 Cortex 카드의 주소 옆 **복사**. 내 계정 경로와 Cortex ID 가 들어간 완성된 주소입니다.
+- **Secret Key** — 마이페이지 › **설정** › My API 의 Secret key 옆 복사 버튼.
 
 > **실제 Secret Key 를 넣은 파일은 공유하거나 저장소에 올리지 마세요.** 키가 새어 나갔다면 설정 화면의 **변경**으로 바로 재발급하세요.
 
@@ -70,7 +72,7 @@ String body = """
        {"role": "system", "content": %s},
        {"role": "user", "content": %s}]}
     """.formatted(quote(rule), quote(text));
-// POST {API_BASE}/cortex/{CORTEX_ID}/messages
+// POST {API_URL}
 // Authorization: Bearer {SECRET_KEY}, Content-Type: application/json, X-API-Version: 1
 ```
 
@@ -90,21 +92,21 @@ String body = """
 
 - **말투 바꾸기** — 번역 규칙(`rule`)에 "Use a polite business tone." 같은 한 줄을 더합니다.
 - **번역하지 않을 단어** — "Do not translate these words: FlameBox, Cortex." 를 더합니다.
-- **다른 모델** — `CORTEX_ID` 만 바꾸면 됩니다. 작은 모델은 빠르지만 번역 품질이 떨어질 수 있습니다.
+- **다른 모델** — 다른 Cortex 의 API URL 로 바꾸면 됩니다. 작은 모델은 빠르지만 번역 품질이 떨어질 수 있습니다.
 
 ## 6. 오류가 날 때
 
 | 메시지 | 확인할 것 |
 |---|---|
-| 상수를 내 값으로 바꾸세요 | `API_BASE`·`SECRET_KEY`·`CORTEX_ID` 를 아직 안 바꿨습니다 |
-| API 주소, Secret Key 또는 Cortex ID 가 틀렸습니다 (`bearer_invalid`) | 설정 › My API·Cortex 목록에서 다시 복사. 키를 재발급했다면 새 키 |
+| 상수를 내 값으로 바꾸세요 | `API_URL`·`SECRET_KEY` 를 아직 안 바꿨습니다 |
+| API URL 또는 Secret Key 가 틀렸습니다 (`bearer_invalid`) | Cortex 목록·설정 › My API 에서 다시 복사. 키를 재발급했다면 새 키 |
 | FlameBox 가 꺼져 있습니다 (`cortexbox_offline`) | FlameBox PC/서버가 켜져 있고 콘솔에 ONLINE 인지 |
 | 시간 초과 | 첫 요청(모델 로드)은 수십 초~수 분 걸릴 수 있습니다. 잠시 뒤 다시 |
 
 ## 7. Python 버전
 
 같은 기능의 Python 소스가 [`python/translate.py`](python/translate.py) 에 있습니다 (Python 3.9+, 표준 라이브러리만).
-위쪽 상수 3개를 바꾼 뒤 `python translate.py "번역할 문장"` 으로 실행합니다.
+위쪽 상수 2개(`API_URL`, `SECRET_KEY`)를 바꾼 뒤 `python translate.py "번역할 문장"` 으로 실행합니다.
 
 ---
 
