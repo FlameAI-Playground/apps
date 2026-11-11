@@ -32,6 +32,16 @@ public class Chatbot {
     static final String SYSTEM_PROMPT = "You are a friendly assistant. Answer briefly in the user's language, in plain text without Markdown.";
     static final String CONVERSATION_ID = "simple-chatbot";
 
+    // Constants left as placeholders -> read environment variables FLAMEAI_API_URL / FLAMEAI_SECRET_KEY instead
+    static final String URL = setting(API_URL, "FLAMEAI_API_URL").replaceFirst("^POST\\s+", "");  // "POST https://…" as copied is fine
+    static final String KEY = setting(SECRET_KEY, "FLAMEAI_SECRET_KEY");
+
+    static String setting(String constant, String envName) {
+        boolean placeholder = constant.contains("YOUR_") || constant.contains("api-xxxx");
+        String value = placeholder ? System.getenv(envName) : constant;
+        return value == null ? "" : value.trim();
+    }
+
     static final Map<String, String> ERRORS = Map.of(
             "bearer_not_found", "Secret Key 가 비어 있습니다. SECRET_KEY 를 확인하세요.",
             "bearer_invalid", "API URL 또는 Secret Key 가 틀렸습니다. Cortex 목록·설정 화면에서 다시 복사하세요.",
@@ -43,8 +53,9 @@ public class Chatbot {
     static boolean newConversation = true;
 
     public static void main(String[] args) throws Exception {
-        if ((API_URL + SECRET_KEY).contains("YOUR_") || API_URL.contains("api-xxxx")) {
-            System.err.println("파일 위쪽의 API_URL, SECRET_KEY 를 내 값으로 바꾸세요 / set the constants at the top");
+        if (URL.isEmpty() || KEY.isEmpty()) {
+            System.err.println("파일 위쪽의 API_URL, SECRET_KEY 를 내 값으로 바꾸거나 환경변수 FLAMEAI_API_URL, FLAMEAI_SECRET_KEY 를 설정하세요");
+            System.err.println("Set the constants at the top, or the environment variables FLAMEAI_API_URL and FLAMEAI_SECRET_KEY.");
             System.exit(1);
         }
         Charset cs = Charset.forName(System.getProperty("stdin.encoding", Charset.defaultCharset().name()));
@@ -88,9 +99,8 @@ public class Chatbot {
              "options": {"stream": false, "think": false, "cortex_reset": %s},
              "messages": [%s {"role": "user", "content": %s}]}
             """.formatted(quote(CONVERSATION_ID), newConversation, system, quote(userMessage));
-        String url = API_URL.trim().replaceFirst("^POST\\s+", "");   // accept "POST https://…" as copied
-        HttpRequest request = HttpRequest.newBuilder(URI.create(url))
-                .header("Authorization", "Bearer " + SECRET_KEY)
+        HttpRequest request = HttpRequest.newBuilder(URI.create(URL))
+                .header("Authorization", "Bearer " + KEY)
                 .header("Content-Type", "application/json")
                 .header("X-API-Version", "1")
                 .timeout(Duration.ofMinutes(5))   // the first call may load the model

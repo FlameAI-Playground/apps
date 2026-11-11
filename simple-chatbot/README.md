@@ -49,6 +49,9 @@ static final String SECRET_KEY = "YOUR_SECRET_KEY";                             
 - **API URL** — 마이페이지 › **Cortex** 목록에서 쓸 Cortex 카드의 주소 옆 **복사**.
 - **Secret Key** — 마이페이지 › **설정** › My API 의 Secret key 옆 복사 버튼.
 
+상수 대신 **환경변수** `FLAMEAI_API_URL`, `FLAMEAI_SECRET_KEY` 로 넣어도 됩니다. 상수가 자리 표시 값(`YOUR_…`) 그대로이면 환경변수를 읽습니다 —
+키를 소스에 적지 않아도 되어 더 안전합니다. / You can also set the environment variables `FLAMEAI_API_URL` and `FLAMEAI_SECRET_KEY` instead.
+
 > **실제 Secret Key 를 넣은 파일은 공유하거나 저장소에 올리지 마세요.**
 
 챗봇의 성격은 `SYSTEM_PROMPT` 한 줄로 바꿉니다 (예: "You are a Java tutor. Explain with short code examples.").
@@ -96,7 +99,7 @@ String body = """
 
 | 메시지 | 확인할 것 |
 |---|---|
-| 상수를 내 값으로 바꾸세요 | `API_URL`·`SECRET_KEY` 를 아직 안 바꿨습니다 |
+| 상수를 내 값으로 바꾸거나 환경변수를 설정하세요 | `API_URL`·`SECRET_KEY` 를 안 바꿨고 환경변수 `FLAMEAI_API_URL`·`FLAMEAI_SECRET_KEY` 도 없습니다 |
 | API URL 또는 Secret Key 가 틀렸습니다 (`bearer_invalid`) | Cortex 목록·설정 › My API 에서 다시 복사 |
 | FlameBox 가 꺼져 있습니다 (`cortexbox_offline`) | FlameBox PC/서버가 켜져 있고 콘솔에 ONLINE 인지 |
 | 다른 대화가 이 Cortex 를 쓰고 있습니다 (`cortex_occupied`) | `/reset` 으로 가져오거나 다른 Cortex 사용 |

@@ -31,6 +31,16 @@ public class Translator {
     static final String SECRET_KEY = "YOUR_SECRET_KEY";                                                     // Settings › My API › Secret key
     static final String CONVERSATION_ID = "english-translator";
 
+    // Constants left as placeholders -> read environment variables FLAMEAI_API_URL / FLAMEAI_SECRET_KEY instead
+    static final String URL = setting(API_URL, "FLAMEAI_API_URL").replaceFirst("^POST\\s+", "");  // "POST https://…" as copied is fine
+    static final String KEY = setting(SECRET_KEY, "FLAMEAI_SECRET_KEY");
+
+    static String setting(String constant, String envName) {
+        boolean placeholder = constant.contains("YOUR_") || constant.contains("api-xxxx");
+        String value = placeholder ? System.getenv(envName) : constant;
+        return value == null ? "" : value.trim();
+    }
+
     static final Map<String, String> LANGS = Map.of(
             "ko", "Korean", "en", "English", "ja", "Japanese", "zh", "Simplified Chinese",
             "es", "Spanish", "fr", "French", "de", "German", "vi", "Vietnamese");
@@ -45,8 +55,9 @@ public class Translator {
     static final HttpClient HTTP = HttpClient.newBuilder().connectTimeout(Duration.ofSeconds(10)).build();
 
     public static void main(String[] args) throws Exception {
-        if ((API_URL + SECRET_KEY).contains("YOUR_") || API_URL.contains("api-xxxx")) {
-            System.err.println("파일 위쪽의 API_URL, SECRET_KEY 를 내 값으로 바꾸세요 / set the constants at the top");
+        if (URL.isEmpty() || KEY.isEmpty()) {
+            System.err.println("파일 위쪽의 API_URL, SECRET_KEY 를 내 값으로 바꾸거나 환경변수 FLAMEAI_API_URL, FLAMEAI_SECRET_KEY 를 설정하세요");
+            System.err.println("Set the constants at the top, or the environment variables FLAMEAI_API_URL and FLAMEAI_SECRET_KEY.");
             System.exit(1);
         }
         String to = null;
@@ -100,9 +111,8 @@ public class Translator {
             """.formatted(quote(CONVERSATION_ID), quote(rule), quote(text));
 
         // accept the URL as copied from the Cortex list, with or without a leading "POST "
-        String url = API_URL.trim().replaceFirst("^POST\\s+", "");
-        HttpRequest request = HttpRequest.newBuilder(URI.create(url))
-                .header("Authorization", "Bearer " + SECRET_KEY)
+        HttpRequest request = HttpRequest.newBuilder(URI.create(URL))
+                .header("Authorization", "Bearer " + KEY)
                 .header("Content-Type", "application/json")
                 .header("X-API-Version", "1")
                 .timeout(Duration.ofMinutes(5))   // the first call may load the model

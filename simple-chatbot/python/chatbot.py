@@ -11,6 +11,7 @@ Do not share or commit this file with your real Secret Key in it.
 Python 3.9+, standard library only. The main version of this example is ../java/Chatbot.java.
 """
 import json
+import os
 import re
 import socket
 import sys
@@ -33,6 +34,16 @@ ERRORS = {
     "cortex_occupied": "다른 대화가 이 Cortex 를 쓰고 있습니다. /reset 으로 새 대화를 시작하면 이 대화로 가져옵니다.",
 }
 
+
+def setting(constant, env_name):
+    """상수가 자리 표시 값이면 환경변수(FLAMEAI_API_URL / FLAMEAI_SECRET_KEY)에서 읽는다."""
+    if "YOUR_" in constant or "api-xxxx" in constant:
+        return os.environ.get(env_name, "").strip()
+    return constant.strip()
+
+
+URL = re.sub(r"^POST\s+", "", setting(API_URL, "FLAMEAI_API_URL"))  # "POST …" 째로 복사해도 된다
+KEY = setting(SECRET_KEY, "FLAMEAI_SECRET_KEY")
 new_conversation = True
 
 
@@ -44,8 +55,8 @@ def send(user_message):
             "options": {"stream": False, "think": False, "cortex_reset": new_conversation},
             "messages": messages}
     req = urllib.request.Request(
-        re.sub(r"^POST\s+", "", API_URL.strip()), data=json.dumps(body).encode("utf-8"), method="POST",
-        headers={"Authorization": f"Bearer {SECRET_KEY}", "Content-Type": "application/json", "X-API-Version": "1"})
+        URL, data=json.dumps(body).encode("utf-8"), method="POST",
+        headers={"Authorization": f"Bearer {KEY}", "Content-Type": "application/json", "X-API-Version": "1"})
     try:
         with urllib.request.urlopen(req, timeout=300) as res:  # 첫 요청은 모델을 올리느라 오래 걸릴 수 있다
             return json.load(res)
@@ -72,8 +83,9 @@ def main():
     for stream in (sys.stdout, sys.stderr):
         if hasattr(stream, "reconfigure"):
             stream.reconfigure(encoding="utf-8")
-    if "YOUR_" in API_URL + SECRET_KEY or "api-xxxx" in API_URL:
-        sys.exit("파일 위쪽의 API_URL, SECRET_KEY 를 내 값으로 바꾸세요 / set the constants at the top")
+    if not URL or not KEY:
+        sys.exit("파일 위쪽의 API_URL, SECRET_KEY 를 내 값으로 바꾸거나 환경변수 FLAMEAI_API_URL, FLAMEAI_SECRET_KEY 를 설정하세요 / "
+                 "set the constants at the top or the environment variables FLAMEAI_API_URL, FLAMEAI_SECRET_KEY")
     print("FlameAI chatbot  (/reset: 새 대화, /exit 또는 빈 줄: 종료)")
     print("첫 응답은 모델을 메모리에 올리느라 조금 걸릴 수 있습니다.")
     while True:

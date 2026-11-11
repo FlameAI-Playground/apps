@@ -13,6 +13,7 @@ Python 3.9+, standard library only. The main version of this example is ../java/
 """
 import argparse
 import json
+import os
 import re
 import socket
 import sys
@@ -23,6 +24,13 @@ import urllib.request
 API_URL = "https://api-xxxx.flameai.im/AbCd1234/cortex/YOUR_CORTEX_ID/messages"  # Cortex list › API URL
 SECRET_KEY = "YOUR_SECRET_KEY"                                                    # Settings › My API › Secret key
 CONVERSATION_ID = "english-translator"
+
+
+def setting(constant, env_name):
+    """상수가 자리 표시 값이면 환경변수(FLAMEAI_API_URL / FLAMEAI_SECRET_KEY)에서 읽는다."""
+    if "YOUR_" in constant or "api-xxxx" in constant:
+        return os.environ.get(env_name, "").strip()
+    return constant.strip()
 
 LANGS = {"ko": "Korean", "en": "English", "ja": "Japanese", "zh": "Simplified Chinese",
          "es": "Spanish", "fr": "French", "de": "German", "vi": "Vietnamese"}
@@ -49,10 +57,12 @@ class TranslateError(Exception):
 
 
 def load_config(conversation):
-    if "YOUR_" in API_URL + SECRET_KEY or "api-xxxx" in API_URL:
-        sys.exit("파일 위쪽의 API_URL, SECRET_KEY 를 내 값으로 바꾸세요 / set the constants at the top")
-    url = re.sub(r"^POST\s+", "", API_URL.strip())  # Cortex 목록에서 "POST …" 째로 복사해도 된다
-    return {"url": url, "key": SECRET_KEY, "conversation": conversation}
+    url = re.sub(r"^POST\s+", "", setting(API_URL, "FLAMEAI_API_URL"))  # "POST …" 째로 복사해도 된다
+    key = setting(SECRET_KEY, "FLAMEAI_SECRET_KEY")
+    if not url or not key:
+        sys.exit("파일 위쪽의 API_URL, SECRET_KEY 를 내 값으로 바꾸거나 환경변수 FLAMEAI_API_URL, FLAMEAI_SECRET_KEY 를 설정하세요 / "
+                 "set the constants at the top or the environment variables FLAMEAI_API_URL, FLAMEAI_SECRET_KEY")
+    return {"url": url, "key": key, "conversation": conversation}
 
 
 def target_language(text, to):
