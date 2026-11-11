@@ -1,0 +1,17 @@
+# secrets — copy .env.example to .env and fill in your own values
+.env
+*.key
+
+# Python
+__pycache__/
+*.pyc
+.venv/
+
+# Java
+*.class
+
+# OS / editor
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
