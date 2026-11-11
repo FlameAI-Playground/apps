@@ -7,21 +7,23 @@
   python translate.py < note.txt             # translate a whole file
   python translate.py                        # interactive mode (empty line or Ctrl+C to quit)
 
-Settings (environment variables, shown in the FlameAI console under Settings):
-  FLAMEAI_API_BASE    API base url, e.g. https://api-xxxx.flameai.im/AbCd1234
-  FLAMEAI_SECRET_KEY  Secret key — never hard-code it
-  FLAMEAI_CORTEX_ID   the Cortex to use (a text model such as Gemma 4)
-
-Python 3.9+, standard library only.
+Put your own values in the three constants below (FlameAI console > Settings / Cortex list).
+Do not share or commit this file with your real Secret Key in it.
+Python 3.9+, standard library only. The main version of this example is ../java/Translator.java.
 """
 import argparse
 import json
-import os
 import re
 import socket
 import sys
 import urllib.error
 import urllib.request
+
+# ── Settings — copy from the FlameAI console ─────────────────────────────
+API_BASE = "https://api-xxxx.flameai.im/AbCd1234"  # Settings › My API › API base url
+SECRET_KEY = "YOUR_SECRET_KEY"                     # Settings › My API › Secret key
+CORTEX_ID = "YOUR_CORTEX_ID"                       # Cortex list ⋮ › Copy Cortex ID
+CONVERSATION_ID = "english-translator"
 
 LANGS = {"ko": "Korean", "en": "English", "ja": "Japanese", "zh": "Simplified Chinese",
          "es": "Spanish", "fr": "French", "de": "German", "vi": "Vietnamese"}
@@ -35,10 +37,10 @@ SYSTEM_PROMPT = (
 
 # FlameAI error codes -> what the user should do
 ERRORS = {
-    "bearer_not_found": "Secret Key 가 없습니다. FLAMEAI_SECRET_KEY 를 확인하세요.",
-    "bearer_invalid": "API 주소나 Secret Key 가 틀렸습니다. 콘솔 설정에서 다시 복사하세요.",
+    "bearer_not_found": "Secret Key 가 비어 있습니다. SECRET_KEY 를 확인하세요.",
+    "bearer_invalid": "API 주소, Secret Key 또는 Cortex ID 가 틀렸습니다. 콘솔에서 다시 복사하세요.",
     "cortexbox_offline": "FlameBox 가 꺼져 있습니다. PC/서버에서 FlameBox 를 켜 주세요.",
-    "cortex_not_found": "Cortex ID 가 틀렸거나 삭제된 Cortex 입니다. FLAMEAI_CORTEX_ID 를 확인하세요.",
+    "cortex_not_found": "Cortex ID 가 틀렸거나 삭제된 Cortex 입니다. CORTEX_ID 를 확인하세요.",
     "cortex_occupied": "다른 대화가 이 Cortex 를 쓰고 있습니다. 잠시 뒤 다시 시도하세요.",
 }
 
@@ -48,15 +50,9 @@ class TranslateError(Exception):
 
 
 def load_config(conversation):
-    cfg = {k: os.environ.get(v, "").strip() for k, v in
-           (("base", "FLAMEAI_API_BASE"), ("key", "FLAMEAI_SECRET_KEY"), ("cortex", "FLAMEAI_CORTEX_ID"))}
-    missing = [v for k, v in (("base", "FLAMEAI_API_BASE"), ("key", "FLAMEAI_SECRET_KEY"),
-                              ("cortex", "FLAMEAI_CORTEX_ID")) if not cfg[k]]
-    if missing:
-        sys.exit("환경변수를 설정하세요 / set environment variables: " + ", ".join(missing))
-    cfg["base"] = cfg["base"].rstrip("/")
-    cfg["conversation"] = conversation
-    return cfg
+    if "YOUR_" in SECRET_KEY + CORTEX_ID or "api-xxxx" in API_BASE:
+        sys.exit("파일 위쪽의 API_BASE, SECRET_KEY, CORTEX_ID 를 내 값으로 바꾸세요 / set the constants at the top")
+    return {"base": API_BASE.rstrip("/"), "key": SECRET_KEY, "cortex": CORTEX_ID, "conversation": conversation}
 
 
 def target_language(text, to):
@@ -106,8 +102,7 @@ def main():
     ap = argparse.ArgumentParser(description="FlameAI translator (Korean <-> English)")
     ap.add_argument("text", nargs="*", help="번역할 문장 / text to translate")
     ap.add_argument("--to", help="대상 언어 / target language: ko, en, ja, zh, es, fr, de, vi ...")
-    ap.add_argument("--conversation", default=os.environ.get("FLAMEAI_CONVERSATION_ID", "english-translator"),
-                    help="conversationId (기본 english-translator)")
+    ap.add_argument("--conversation", default=CONVERSATION_ID, help="conversationId (기본 english-translator)")
     args = ap.parse_args()
     cfg = load_config(args.conversation)
 

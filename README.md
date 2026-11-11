@@ -19,27 +19,29 @@ Blog examples live in a folder named after the post slug.
 ```
 {slug}/
 ├─ README.md     설명 / guide
-├─ python/       Python (표준 라이브러리만 / standard library only)
-└─ java/         Java (JDK 11+)
+├─ java/         Java (JDK 21+, 라이브러리 없이 / no libraries)
+└─ python/       Python (표준 라이브러리만 / standard library only)
 ```
 
 ## 준비 / Setup
 
 1. FlameBox 설치 후 계정 연결 — https://flameai.im/blog/flamebox-install-windows · https://flameai.im/blog/flamebox-install-linux
 2. 콘솔에서 Cortex 만들기 — https://flameai.im/blog/first-api-call
-3. 환경변수 3개 (콘솔 **설정 › AI 에이전트와 연동하기**에 같은 이름으로 나옵니다 / shown in the console under Settings)
+3. 소스 위쪽의 상수 3개를 내 값으로 바꿉니다 / set the three constants at the top of the source
 
-| 이름 / Name | 값 / Value |
+| 상수 / Constant | 어디서 / Where |
 |---|---|
-| `FLAMEAI_API_BASE` | API base url (예: `https://api-xxxx.flameai.im/AbCd1234`) |
-| `FLAMEAI_SECRET_KEY` | Secret key — 코드에 직접 쓰지 마세요 / never hard-code it |
-| `FLAMEAI_CORTEX_ID` | 부를 Cortex 의 ID / the Cortex to call |
+| `API_BASE` | 설정 › My API › API base url (예: `https://api-xxxx.flameai.im/AbCd1234`) |
+| `SECRET_KEY` | 설정 › My API › Secret key |
+| `CORTEX_ID` | Cortex 목록 ⋮ › Cortex ID 복사 / Cortex list ⋮ › Copy Cortex ID |
+
+> 실제 Secret Key 를 넣은 파일은 공유하거나 저장소에 올리지 마세요. / Never share or commit a file with your real Secret Key.
 
 ## 목록 / Index
 
 | 폴더 / Folder | 설명 / Description | 블로그 글 / Post |
 |---|---|---|
-| [`english-translator`](english-translator) | 한국어 ↔ 영어 콘솔 번역기 (Python · Java) / Korean ↔ English console translator | [Python 파일 하나로 만드는 한↔영 번역기](https://flameai.im/blog/english-translator) |
+| [`english-translator`](english-translator) | LLM 기반 AI 번역기, 한국어 ↔ 영어 (Java · Python) / LLM-based Korean ↔ English translator | [Java로 만드는 LLM 기반 AI 번역기](https://flameai.im/blog/english-translator) |
 
 ## License
 
