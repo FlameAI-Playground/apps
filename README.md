@@ -40,6 +40,7 @@ Blog examples live in a folder named after the post slug.
 
 | 폴더 / Folder | 설명 / Description | 블로그 글 / Post |
 |---|---|---|
+| [`simple-chatbot`](simple-chatbot) | 대화를 기억하는 LLM 콘솔 챗봇 (Java · Python) / LLM console chatbot that remembers the conversation | [Java로 만드는 LLM 챗봇](https://flameai.im/blog/simple-chatbot) |
 | [`english-translator`](english-translator) | LLM 기반 AI 번역기, 한국어 ↔ 영어 (Java · Python) / LLM-based Korean ↔ English translator | [Java로 만드는 LLM 기반 AI 번역기](https://flameai.im/blog/english-translator) |
 
 ## License
