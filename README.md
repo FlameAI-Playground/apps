@@ -40,6 +40,7 @@ Blog examples live in a folder named after the post slug.
 
 | 폴더 / Folder | 설명 / Description | 블로그 글 / Post |
 |---|---|---|
+| [`focus-coach`](focus-coach) | 웹캠 사진을 Gemma 4 E4B 에게 보여 주고 자리·상태·표정을 표시 (Python · Java) / Webcam + vision LLM: shows your seat, state and expression | [카메라와 Gemma4 AI를 연동해 보자](https://flameai.im/blog/focus-coach) |
 | [`photo-editor`](photo-editor) | 사진을 고치는 AI 사진 편집기 — 계절 바꾸기·수채화·두 장 합치기, Qwen Image 2.1 (Java · Python) / AI photo editing | [Java로 만드는 AI 사진 편집기 — Qwen Image 2.1](https://flameai.im/blog/photo-editor) |
 | [`photo-generator`](photo-generator) | 문장으로 그림을 만드는 AI 이미지 생성기, Qwen Image (Java · Python) / Text-to-image console app | [Java로 만드는 AI 이미지 생성기 — Qwen Image 2.1](https://flameai.im/blog/photo-generator) |
 | [`simple-chatbot`](simple-chatbot) | 대화를 기억하는 LLM 콘솔 챗봇 (Java · Python) / LLM console chatbot that remembers the conversation | [Java로 만드는 LLM 챗봇](https://flameai.im/blog/simple-chatbot) |
