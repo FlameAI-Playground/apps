@@ -23,6 +23,20 @@ hello.txt 파일을 생성했으며, 현재 폴더의 파일 목록은 다음과
 
 (실제 실행 결과 — 개발 시험용 Gemma 4 E4B Q8, 컨텍스트 64K. 새 대화의 첫 요청 13초, 이어지는 요청 1초 안팎)
 
+## 왜 브리지가 필요한가
+
+Hermes 는 모델을 **OpenAI 형식**(`/v1/models`, `/v1/chat/completions`)으로만 부릅니다. FlameAI Cortex 는 형식이 다릅니다.
+
+| 항목 | Hermes 가 기대하는 것 (OpenAI) | FlameAI Cortex |
+|---|---|---|
+| 주소 | `/v1/models`, `/v1/chat/completions` | `…/cortex/{id}/messages` |
+| 대화 | 매번 처음부터 **전체**를 보냄 (Stateless) | Cortex 가 기억 — **새 메시지만** (Stateful) |
+| 도구 호출 응답 | `tool_calls` — 이름 + JSON 인자 | `tool_use.raw` — 모델이 쓴 호출 **원문** (모델마다 모양이 다름) |
+| 끝난 이유·스트림 | `finish_reason`, `choices[].delta` | `usage.stop_reason`, `message.delta` 이벤트 |
+
+브리지는 **Hermes 가 보내는 OpenAI 형식(Chat Completions) 요청을 그대로 받아** FlameAI 형식으로 바꿔 Cortex 에 전하고, 답은 다시 Hermes 가 기다리는 형식으로 돌려줍니다.
+Hermes 에게는 OpenAI 서버처럼, Cortex 에게는 FlameAI 클라이언트처럼 행동하는 통역사라 Hermes 는 고치지 않습니다. (Hermes 설정의 API mode 3·4 — Responses, Anthropic Messages — 는 지원하지 않습니다.)
+
 ## 1. 준비
 
 1. **FlameBox 설치·계정 연결** — [Windows 편](https://flameai.im/blog/flamebox-install-windows) · [Linux 편](https://flameai.im/blog/flamebox-install-linux)
@@ -87,15 +101,32 @@ FlameAI Bridge: http://127.0.0.1:8765/v1  (model: flameai)  — Ctrl+C 로 종�
 | 한 번만 묻기 | `hermes chat -q "질문"` |
 | 웹 화면 | `hermes dashboard` → http://127.0.0.1:9119 |
 
-## 5. 브리지가 하는 일
+## 5. 브리지가 하는 일 — 도구 호출 한 번의 흐름
 
-| Hermes (OpenAI 형식) | 브리지 | FlameAI |
-|---|---|---|
-| `GET /v1/models` | Cortex 하나를 모델 `flameai` 로 | — |
-| 매번 대화 전체를 보냄 | 앞부분이 Cortex 가 기억하는 것과 같으면 **새 메시지만**, 다르면 `cortex_reset` 으로 다시 구성 | `POST …/messages` |
-| `tools` / `role:"tool"` 결과 | 그대로 전달 (FlameBox 가 OpenAI 모양도 받음) | |
-| — | 모델이 쓴 도구 호출 원문(`tool_use.raw`, 모델마다 형식이 다름)을 `tool_calls` 로 바꿈 | Qwen 3.5 XML · Gemma 4 · GPT-OSS · JSON |
-| 스트리밍 | FlameAI SSE → OpenAI chunk | |
+1. **Hermes → 브리지**: 시스템 프롬프트 + 지금까지의 대화 전체 + 도구 설명(약 1만 토큰)을 OpenAI 형식으로 보냅니다.
+2. **대화 기억 맞추기**: 앞부분이 바로 전에 Cortex 에 보낸 것과 같고, Cortex 상태(`/status` 의 conversationId·last_response_id)도 그대로면
+   **새로 붙은 메시지만** 보냅니다. 처음이거나 달라졌으면 `cortex_reset: true` 로 전체를 다시 넣습니다.
+3. **Cortex 의 판단**: 도구를 쓰기로 하면 `tool_use` 블록에 호출 원문(`raw`)을 담아 돌려줍니다.
+
+   | 모델 | `raw` 형식 예시 (FlameBox 명세 기준) |
+   |---|---|
+   | Gemma 4 | `call:write_file{path:<\|"\|>hello.txt<\|"\|>}` |
+   | Qwen 3.5·3.8 | `<function=write_file><parameter=path>hello.txt</parameter></function>` |
+   | GPT-OSS | `… to=functions.write_file … <\|message\|>{"path":"hello.txt"}` |
+   | Qwen 3 | `{"name": "write_file", "arguments": {"path": "hello.txt"}}` |
+
+4. **원문 → `tool_calls`**: `parse_raw()` 가 해석해 OpenAI `tool_calls`(이름 + JSON 문자열 인자)로 바꾸고 `finish_reason: "tool_calls"` 로 돌려줍니다.
+   글자로 온 숫자·참거짓은 도구 스키마의 type 에 맞춰 바꿉니다(`fix_types()`).
+5. **Hermes 가 실행**: 도구는 내 PC 의 Hermes 가 실행하고, 결과를 `role: "tool"` 로 붙여 다시 보냅니다. 브리지는 2번처럼 **결과만** Cortex 에 넘깁니다
+   (FlameBox 는 OpenAI 모양의 `tools`·`role:"tool"` 도 그대로 받습니다). 대화를 다시 구성할 때는 받아 둔 `raw` 를 그대로 돌려줍니다.
+
+| 코드 | 하는 일 |
+|---|---|
+| `plan()` | 새 메시지만 보낼지, `cortex_reset` 으로 다시 구성할지 결정. 다른 대화가 점유 중이면 409 |
+| `to_flame()` | OpenAI 메시지 → FlameAI 메시지 |
+| `parse_raw()` · `fix_types()` | 모델별 호출 원문 → `tool_calls` |
+| `chat()` | `/messages` 스트림 호출, 결과를 OpenAI 응답으로 |
+| `Handler` | `GET /v1/models`, `POST /v1/chat/completions` (stream 은 OpenAI chunk 로) |
 
 - 브리지는 conversationId `hermes-bridge` 로 Cortex 를 씁니다. **다른 대화가 그 Cortex 를 쓰고 있으면 빼앗지 않고** 409 를 돌려줍니다.
 - Ctrl+C 로 끄면 Cortex 컨텍스트를 비우고 점유를 풀어 줍니다.
