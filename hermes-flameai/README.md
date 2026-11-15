@@ -95,11 +95,21 @@ FlameAI Bridge: http://127.0.0.1:8765/v1  (model: flameai)  — Ctrl+C 로 종�
 
 ## 4. 실행
 
-| 화면 | 명령 |
+브리지 창은 켜 둔 채로 새 터미널에서, Hermes 가 일할 폴더로 이동합니다. Hermes 는 **실행한 폴더**를 기준으로 파일을 만들고 명령을 실행하므로 처음에는 빈 폴더가 안전합니다.
+
+```
+D:\workfolder> hermes                      ← 콘솔 대화: 맨 아래 ❯ 에 한국어로 입력하고 Enter
+D:\workfolder> hermes dashboard            ← 웹 화면
+HERMES_DASHBOARD_READY port=9119
+  Hermes Web UI → http://127.0.0.1:9119    ← 브라우저로 열고 왼쪽 CHAT, 맨 아래 ❯ 에 입력
+D:\workfolder> hermes chat -q "질문"        ← 한 번만 묻고 끝
+```
+
+| 콘솔에서 | 하는 일 |
 |---|---|
-| 콘솔 대화 | `hermes` |
-| 한 번만 묻기 | `hermes chat -q "질문"` |
-| 웹 화면 | `hermes dashboard` → http://127.0.0.1:9119 |
+| `/help` | 명령 목록 |
+| `/stop` | 진행 중인 작업 멈추기 |
+| `/quit` (또는 `/exit`) | 끝내기 (대시보드는 띄운 터미널에서 Ctrl+C) |
 
 ## 5. 브리지가 하는 일 — 도구 호출 한 번의 흐름
 
